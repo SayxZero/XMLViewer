@@ -12,3 +12,5 @@ Makefile.Release
 *_resource.rc
 *.filters
 /.vs
+desktop.ini
+Command Prompt.lnk
