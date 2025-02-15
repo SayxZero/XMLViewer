@@ -1,0 +1,14 @@
+/release
+/debug
+/log
+/backup
+/.qtc_clangd
+makefile
+.qmake.stash
+Makefile
+Makefile.Debug
+Makefile.Release
+*.user
+*_resource.rc
+*.filters
+/.vs
