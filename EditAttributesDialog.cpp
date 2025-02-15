@@ -44,6 +44,8 @@ int EditAttributesDialog::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CDialog::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
+	SetWindowTextW(L"Атрибуты узла");
+
 	CRect rectClient;
 	GetClientRect(rectClient);
 	rectClient.bottom = rectClient.bottom - 45;
@@ -53,8 +55,8 @@ int EditAttributesDialog::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	int nColInterval = rectClient.Width() / 4;
 
-	m_listCtrl.InsertColumn(0, _T("Item Name"), LVCFMT_LEFT, nColInterval);
-	m_listCtrl.InsertColumn(1, _T("Value"), LVCFMT_LEFT, nColInterval * 3);
+	m_listCtrl.InsertColumn(0, _T("Имя"), LVCFMT_LEFT, nColInterval);
+	m_listCtrl.InsertColumn(1, _T("Значение"), LVCFMT_LEFT, nColInterval * 3);
 
 	if (m_Node)
 	{

@@ -175,6 +175,15 @@ void CXMLViewerView::Dump(CDumpContext& dc) const
 	CView::Dump(dc);
 }
 
+CXMLViewerDoc* CXMLViewerView::GetDocument() const // non-debug version is inline
+{
+
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CXMLViewerDoc)));
+	return (CXMLViewerDoc*)m_pDocument;
+}
+#endif //_DEBUG
+
+
 void CXMLViewerView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
 {
 	m_treeCtrl.DeleteAllItems();
@@ -237,15 +246,6 @@ void CXMLViewerView::OnSize(UINT nType, int cx, int cy)
 
 	m_treeCtrl.SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
 }
-
-CXMLViewerDoc* CXMLViewerView::GetDocument() const // non-debug version is inline
-{
-
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CXMLViewerDoc)));
-	return (CXMLViewerDoc*)m_pDocument;
-}
-#endif //_DEBUG
-
 
 // CXMLViewerView message handlers
 

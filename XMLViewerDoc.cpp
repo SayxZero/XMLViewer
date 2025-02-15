@@ -155,6 +155,7 @@ void CXMLViewerDoc::Serialize(CArchive& ar)
 		size_t cSize = strlen(filePath.m_psz) + 1;
 		size_t convertedChars = 0;
 		wchar_t* wc = new wchar_t[cSize];
+		setlocale(LC_ALL, "ru-RU");
 		mbstowcs_s(&convertedChars, wc, cSize, path, _TRUNCATE);
 		m_filepath = wc;
 		OnOpenDocument(wc);

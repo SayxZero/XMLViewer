@@ -34,11 +34,13 @@ protected:
 // Implementation
 public:
 	virtual ~CXMLViewerView();
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 #endif
+
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
