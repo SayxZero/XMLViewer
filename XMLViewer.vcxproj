@@ -189,6 +189,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TreeCtrlModified.h" />
     <ClInclude Include="XMLViewer.h" />
     <ClInclude Include="XMLViewerDoc.h" />
     <ClInclude Include="XMLViewerView.h" />
@@ -202,6 +203,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TreeCtrlModified.cpp" />
     <ClCompile Include="XMLViewer.cpp" />
     <ClCompile Include="XMLViewerDoc.cpp" />
     <ClCompile Include="XMLViewerView.cpp" />

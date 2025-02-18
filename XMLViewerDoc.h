@@ -20,18 +20,6 @@ struct CItemNode
 	HTREEITEM m_item;
 };
 
-struct CItemAttribute
-{
-	CItemAttribute(::IXMLDOMNodePtr Attribute = nullptr, HTREEITEM TreeItem = nullptr)
-	{
-		m_Attribute = Attribute;
-		m_item = TreeItem;
-	}
-
-	::IXMLDOMAttributePtr m_Attribute;
-	HTREEITEM m_item;
-};
-
 class CXMLViewerDoc : public CDocument
 {
 protected: // create from serialization only

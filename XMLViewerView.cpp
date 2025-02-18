@@ -26,7 +26,6 @@ IMPLEMENT_DYNCREATE(CXMLViewerView, CView)
 BEGIN_MESSAGE_MAP(CXMLViewerView, CView)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
-	ON_WM_RBUTTONDOWN()
 
 	//ON_NOTIFY(TVN_DELETEITEM, CXMLViewerView::m_TreeCtrlID, &CXMLViewerView::onDeleteTreeItem)
 	//ON_NOTIFY(TVN_ITEMEXPANDING, CXMLViewerView::m_TreeCtrlID, &CXMLViewerView::onItemexpanding)
@@ -37,18 +36,11 @@ END_MESSAGE_MAP()
 
 CXMLViewerView::CXMLViewerView() noexcept
 {
-	// TODO: add construction code here
-	p_popup = new CMenu;
-	p_popup->LoadMenuW(IDR_MENU1);
 }
 
 CXMLViewerView::~CXMLViewerView()
 {
-	if (p_popup)
-	{
-		p_popup->DestroyMenu(); // Удаляем новый ресурс меню
-		delete p_popup;
-	}
+	destructTree(m_treeCtrl.GetRootItem());
 }
 
 BOOL CXMLViewerView::PreCreateWindow(CREATESTRUCT& cs)
@@ -59,21 +51,6 @@ BOOL CXMLViewerView::PreCreateWindow(CREATESTRUCT& cs)
 
 
 	return CView::PreCreateWindow(cs);
-}
-
-void CXMLViewerView::OnUpdateTree()
-{
-	//if (!isTreeUpToDate)
-	//{
-
-	//	CRect rectClient;
-	//	GetClientRect(rectClient);
-
-	//	m_treeCtrl.SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
-	//	//isTreeUpToDate = true;
-
-	//}
-	
 }
 
 void CXMLViewerView::expandTreeItem(HTREEITEM parent, const::IXMLDOMNodeListPtr& childPtr)
@@ -97,9 +74,9 @@ void CXMLViewerView::expandTreeItem(HTREEITEM parent, const::IXMLDOMNodeListPtr&
 				{
 					CItemNode* Item = new CItemNode(nodePtr);
 					BSTR nodeName;
-					::IXMLDOMNamedNodeMapPtr nodeMapPtr;
 					if (SUCCEEDED(hr))
 					{
+						::IXMLDOMNamedNodeMapPtr nodeMapPtr;
 						hr = Item->m_Node->get_nodeName(&nodeName);
 						hr = Item->m_Node->get_attributes(&nodeMapPtr);
 						::IXMLDOMNodePtr attributePtr;
@@ -125,20 +102,43 @@ void CXMLViewerView::expandTreeItem(HTREEITEM parent, const::IXMLDOMNodeListPtr&
 											insertTreeItem(Item, parent, nodeName);
 										}
 									}
+									else
+									{
+										if (Item)
+										{
+											delete Item;
+											Item = nullptr;
+										}
+									}
 								}
 								else
 								{
 									insertTreeItem(Item, parent, nodeName);
 								}
 								
-								::IXMLDOMNodeListPtr childrenPtr;
-								hr = Item->m_Node->get_childNodes(&childrenPtr);
-								if (SUCCEEDED(hr) && childrenPtr)
+								if (Item)
 								{
-									expandTreeItem(Item->m_item, childrenPtr);
+									::IXMLDOMNodeListPtr childrenPtr;
+									hr = Item->m_Node->get_childNodes(&childrenPtr);
+									if (SUCCEEDED(hr) && childrenPtr)
+									{
+										expandTreeItem(Item->m_item, childrenPtr);
+									}
 								}
 							}
+							else
+							{
+								if (Item) delete Item;
+							}
 						}
+						else
+						{
+							if (Item) delete Item;
+						}
+					}
+					else
+					{
+						if (Item) delete Item;
 					}
 				}
 			}
@@ -157,7 +157,6 @@ void CXMLViewerView::OnDraw(CDC* /*pDC*/)
 	if (!pDoc)
 		return;
 
-//	OnUpdateTree();
 	// TODO: add draw code for native data here
 }
 
@@ -186,12 +185,8 @@ CXMLViewerDoc* CXMLViewerView::GetDocument() const // non-debug version is inlin
 
 void CXMLViewerView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
 {
+	destructTree(m_treeCtrl.GetRootItem());
 	m_treeCtrl.DeleteAllItems();
-
-	/*CRect rectClient;
-	GetClientRect(rectClient);
-
-	m_treeCtrl.SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER);*/
 
 	::IXMLDOMDocumentPtr documentPtr;
 	::IXMLDOMNodeListPtr childrenPtr;
@@ -227,47 +222,31 @@ int CXMLViewerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CXMLViewerView::onDeleteTreeItem(NMHDR* pNMHDR, LRESULT* pResult)
-{
-}
-
-void CXMLViewerView::onItemexpanding(NMHDR* pNMHDR, LRESULT* pResult)
-{
-}
-
-void CXMLViewerView::onSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
-{
-}
-
 void CXMLViewerView::OnSize(UINT nType, int cx, int cy)
 {
 	CRect rectClient;
 	GetClientRect(rectClient);
-
 	m_treeCtrl.SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
-// CXMLViewerView message handlers
-
-
-void CXMLViewerView::OnRButtonDown(UINT nFlags, CPoint point)
+void CXMLViewerView::destructTree(HTREEITEM Item)
 {
-	// TODO: Add your message handler code here and/or call default
-
-	ClientToScreen(&point);
-
-	CMenu* psub = p_popup->GetSubMenu(0);
-	if (psub) // Если такое подменю существует
+	while (Item != NULL)
 	{
-		// Отобразить его в том месте, где щелкнули правой кнопкой мыши
-		psub->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
+		CItemNode* itemNode = (CItemNode*)m_treeCtrl.GetItemData(Item);
+		if (itemNode) {
+			try {
+				delete itemNode;
+			}
+			catch (int i) {}
+		}
+		HTREEITEM ItemChild = m_treeCtrl.GetNextItem(Item, TVGN_CHILD);
+		if (ItemChild != NULL)
+			destructTree(ItemChild);
+		Item = m_treeCtrl.GetNextItem(Item, TVGN_NEXT);
 	}
+	
 
-	m_treeCtrl.GetSelectedItem();
-
-	Invalidate(NULL);
-
-	CView::OnRButtonDown(nFlags, point);
 }
 
 BOOL CXMLViewerView::insertTreeItem(CItemNode* itemnode, HTREEITEM parent, BSTR text)

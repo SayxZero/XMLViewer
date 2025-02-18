@@ -9,8 +9,6 @@
 #ifndef SHARED_HANDLERS
 #include "XMLViewer.h"
 #include "MainFrm.h"
-#include <string>
-
 #endif
 
 #include "XMLViewerDoc.h"
@@ -96,7 +94,7 @@ BOOL CXMLViewerDoc::OnOpenDocument(LPWSTR filePath)
 	{
 		hr = m_docPtr->load(_variant_t(filePath), &varBool);
 		if (SUCCEEDED(hr) && varBool) {
-			SetModifiedFlag(TRUE);
+			SetModifiedFlag(FALSE);
 			return TRUE;
 		}
 		else
@@ -159,6 +157,7 @@ void CXMLViewerDoc::Serialize(CArchive& ar)
 		mbstowcs_s(&convertedChars, wc, cSize, path, _TRUNCATE);
 		m_filepath = wc;
 		OnOpenDocument(wc);
+		delete[] wc;
 	}
 }
 

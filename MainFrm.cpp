@@ -119,6 +119,7 @@ void CMainFrame::OnEditTreeItem()
 			{
 				EditAttributesDialog* dlg = new EditAttributesDialog(this, xmlView->GetDocument(), itemNode->m_Node);
 				dlg->DoModal();
+				delete dlg;
 			}
 		}
 	}
