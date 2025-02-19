@@ -75,21 +75,23 @@ int EditAttributesDialog::OnCreate(LPCREATESTRUCT lpCreateStruct)
 				{
 					BSTR nodeName;
 					hr = attributePtr->get_nodeName(&nodeName);
-					hr = attributePtr->get_nodeValue(&var);
 					if (SUCCEEDED(hr))
 					{
-						LVITEMW lvi;
-						lvi.mask = LVIF_TEXT;
-						lvi.iItem = k;
-						lvi.iSubItem = 0;
-						lvi.pszText = nodeName;
-						m_listCtrl.InsertItem(&lvi);
-						lvi.iSubItem = 1;
-						lvi.pszText = var.bstrVal;
-						int kkk = m_listCtrl.SetItem(&lvi);
-						kkk;
+						hr = attributePtr->get_nodeValue(&var);
+						if (SUCCEEDED(hr))
+						{
+							LVITEMW lvi;
+							lvi.mask = LVIF_TEXT;
+							lvi.iItem = k;
+							lvi.iSubItem = 0;
+							lvi.pszText = nodeName;
+							m_listCtrl.InsertItem(&lvi);
+							lvi.iSubItem = 1;
+							lvi.pszText = var.bstrVal;
+							int kkk = m_listCtrl.SetItem(&lvi);
+							kkk;
+						}
 					}
-
 				}
 			}
 		}

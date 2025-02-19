@@ -26,6 +26,7 @@ IMPLEMENT_DYNCREATE(CXMLViewerView, CView)
 BEGIN_MESSAGE_MAP(CXMLViewerView, CView)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
+	ON_WM_DESTROY()
 
 	//ON_NOTIFY(TVN_DELETEITEM, CXMLViewerView::m_TreeCtrlID, &CXMLViewerView::onDeleteTreeItem)
 	//ON_NOTIFY(TVN_ITEMEXPANDING, CXMLViewerView::m_TreeCtrlID, &CXMLViewerView::onItemexpanding)
@@ -40,7 +41,6 @@ CXMLViewerView::CXMLViewerView() noexcept
 
 CXMLViewerView::~CXMLViewerView()
 {
-	destructTree(m_treeCtrl.GetRootItem());
 }
 
 BOOL CXMLViewerView::PreCreateWindow(CREATESTRUCT& cs)
@@ -78,52 +78,59 @@ void CXMLViewerView::expandTreeItem(HTREEITEM parent, const::IXMLDOMNodeListPtr&
 					{
 						::IXMLDOMNamedNodeMapPtr nodeMapPtr;
 						hr = Item->m_Node->get_nodeName(&nodeName);
-						hr = Item->m_Node->get_attributes(&nodeMapPtr);
-						::IXMLDOMNodePtr attributePtr;
 						if (SUCCEEDED(hr))
 						{
-							long attrLength;
-							nodeMapPtr->get_length(&attrLength);
-							hr = nodeMapPtr->get_item(0, &attributePtr);
-							if (SUCCEEDED(hr) /*&& attributePtr*/)
+							hr = Item->m_Node->get_attributes(&nodeMapPtr);
+							::IXMLDOMNodePtr attributePtr;
+							if (SUCCEEDED(hr))
 							{
-								if (attrLength) 
+								long attrLength;
+								nodeMapPtr->get_length(&attrLength);
+								hr = nodeMapPtr->get_item(0, &attributePtr);
+								if (SUCCEEDED(hr) /*&& attributePtr*/)
 								{
-									VARIANT var = VARIANT();
-									hr = attributePtr->get_nodeValue(&var);
-									if (SUCCEEDED(hr))
+									if (attrLength)
 									{
-										if (wcslen(var.bstrVal) != 0)
+										VARIANT var = VARIANT();
+										hr = attributePtr->get_nodeValue(&var);
+										if (SUCCEEDED(hr))
 										{
-											insertTreeItem(Item, parent, var.bstrVal);
+											if (wcslen(var.bstrVal) != 0)
+											{
+												insertTreeItem(Item, parent, var.bstrVal);
+											}
+											else
+											{
+												insertTreeItem(Item, parent, nodeName);
+											}
 										}
 										else
 										{
-											insertTreeItem(Item, parent, nodeName);
+											if (Item)
+											{
+												delete Item;
+												Item = nullptr;
+											}
 										}
 									}
 									else
 									{
-										if (Item)
+										insertTreeItem(Item, parent, nodeName);
+									}
+
+									if (Item)
+									{
+										::IXMLDOMNodeListPtr childrenPtr;
+										hr = Item->m_Node->get_childNodes(&childrenPtr);
+										if (SUCCEEDED(hr) && childrenPtr)
 										{
-											delete Item;
-											Item = nullptr;
+											expandTreeItem(Item->m_item, childrenPtr);
 										}
 									}
 								}
 								else
 								{
-									insertTreeItem(Item, parent, nodeName);
-								}
-								
-								if (Item)
-								{
-									::IXMLDOMNodeListPtr childrenPtr;
-									hr = Item->m_Node->get_childNodes(&childrenPtr);
-									if (SUCCEEDED(hr) && childrenPtr)
-									{
-										expandTreeItem(Item->m_item, childrenPtr);
-									}
+									if (Item) delete Item;
 								}
 							}
 							else
@@ -227,6 +234,11 @@ void CXMLViewerView::OnSize(UINT nType, int cx, int cy)
 	CRect rectClient;
 	GetClientRect(rectClient);
 	m_treeCtrl.SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
+}
+
+void CXMLViewerView::OnDestroy()
+{
+	destructTree(m_treeCtrl.GetRootItem());
 }
 
 void CXMLViewerView::destructTree(HTREEITEM Item)
